@@ -13,13 +13,13 @@ class AgendaDatabaseSeeder extends Seeder
     {
         User::create([
             'name' => 'Roberto',
-            'email' => 'robertomatos@hotmail.com',
+            'email' => 'roberto@hotmail.com',
             'password' => Hash::make('Poli@2575'),
         ]);
 
         User::create([
             'name' => 'Euler',
-            'email' => 'euleralburquerque@hotmail.com',
+            'email' => 'euler@hotmail.com',
             'password' => Hash::make('Poli@2575'),
         ]);
 
