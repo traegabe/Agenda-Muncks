@@ -55,31 +55,26 @@
             <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-8">
                 <div class="min-w-0">
                     <h3 class="font-bold text-lg">{{ $a->cliente }}</h3>
-                    <p class="text-sm text-gray-600 mt-1">
-                        {{ $inicio->format('d/m/Y') }} {{ $inicio->format('H:i') }}{{ $fim ? ' às '.$fim->format('H:i') : '' }}
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                        <strong>Valor:</strong> R$ {{ $a->valor_total ? number_format($a->valor_total, 2, ',', '.') : '0,00' }}
-                    </p>
-                    <p class="text-xs text-gray-400 mt-1">Lançado por: {{ $a->criador->name ?? 'Sistema' }}</p>
+                    <div class="text-sm text-gray-600 mt-1 space-y-0.5">
+                        <p><span class="text-gray-400">Contato:</span> {{ $a->contato }}</p>
+                        <p><span class="text-gray-400">Data:</span> {{ $inicio->format('d/m/Y') }}</p>
+                        <p><span class="text-gray-400">Horário:</span> {{ $inicio->format('H:i') }}{{ $fim ? ' às '.$fim->format('H:i') : '' }}</p>
+                        <p><span class="text-gray-400">Motorista:</span> {{ $a->motorista }}</p>
+                        <p><span class="text-gray-400">Valor:</span> R$ {{ $a->valor_total ? number_format($a->valor_total, 2, ',', '.') : '0,00' }}</p>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Lançado por: {{ $a->criador->name ?? 'Sistema' }}</p>
                 </div>
                 @php
                     $dataAgendamento = $a->data_inicio->copy()->startOfDay();
                     $dataHoje = \Carbon\Carbon::now()->startOfDay();
                 @endphp
-                @if($dataAgendamento->isToday())
-                <div class="sm:flex-shrink-0">
-                    <span style="color: #ff6600; font-weight: bold; white-space: nowrap;">
-                        ⚠️ Atenção! O agendamento do Munck é hoje! ⚠️
-                    </span>
-                </div>
-                @elseif($dataAgendamento->isPast())
+                @if($dataAgendamento->isPast())
                 <div class="sm:flex-shrink-0">
                     @php
                         $diasAtraso = $dataAgendamento->diffInDays($dataHoje);
                     @endphp
                     <span style="color: #ff0000; font-weight: bold; white-space: nowrap;">
-                        ⚠️ Atenção! O munck está com prazo atrasado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} ⚠️
+                        ⚠️ Atenção! O pagamento está atrazado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} ⚠️
                     </span>
                 </div>
                 @endif

@@ -55,26 +55,33 @@
                 $cor = 'border-red-500';
             }
         @endphp
-        <a href="/agenda/agendamentos/{{ $a->id }}" class="block">
+        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}'" style="cursor: pointer;" class="block">
             <div class="bg-green-50 rounded-lg shadow p-4 border-l-4 {{ $cor }} flex items-center gap-3">
                 <div class="flex-1 min-w-0">
                     <h3 class="font-bold text-lg">{{ $a->cliente }}</h3>
-                    <p class="text-sm text-gray-600 mt-1">
-                        @if($fim)
-                            {{ $inicio->format('d/m/Y') }} {{ $inicio->format('H:i') }} às {{ $fim->format('H:i') }}
-                        @else
-                            {{ $inicio->format('d/m/Y') }} {{ $inicio->format('H:i') }}
-                        @endif
-                    </p>
-                    <p class="text-xs text-gray-400 mt-1">Lançado por: {{ $a->criador->name ?? 'Sistema' }}</p>
+                    <div class="text-sm text-gray-600 mt-1 space-y-0.5">
+                        <p><span class="text-gray-400">Contato:</span> {{ $a->contato }}</p>
+                        <p><span class="text-gray-400">Data:</span> {{ $inicio->format('d/m/Y') }}</p>
+                        <p><span class="text-gray-400">Horário:</span> {{ $inicio->format('H:i') }}{{ $fim ? ' às '.$fim->format('H:i') : '' }}</p>
+                        <p><span class="text-gray-400">Motorista:</span> {{ $a->motorista }}</p>
+                        <p><span class="text-gray-400">Valor:</span> R$ {{ $a->valor_total ? number_format($a->valor_total, 2, ',', '.') : '0,00' }}</p>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Lançado por: {{ $a->criador->name ?? 'Sistema' }}</p>
                 </div>
                 <span class="inline-block px-3 py-1 rounded text-xs font-semibold whitespace-nowrap
                     @if($a->pago) bg-green-100 text-green-800
                     @else bg-red-100 text-red-800 @endif">
                     {{ $a->pago ? 'Pago' : 'Não Pago' }}
                 </span>
+                <form method="POST" action="/agenda/agendamentos/{{ $a->id }}/excluir" onclick="event.stopPropagation();" onsubmit="return confirm('Tem certeza que deseja excluir permanentemente este registro?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap">
+                        Excluir
+                    </button>
+                </form>
             </div>
-        </a>
+        </div>
         @empty
         <p class="text-gray-500 text-center py-8">Nenhum serviço concluído.</p>
         @endforelse

@@ -79,7 +79,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Efetuou pagamento</label>
-                        <select name="efetuou_pagamento" id="efetuou_pagamento" class="w-full border rounded p-2 mt-1 text-sm">
+                        <select name="efetuou_pagamento" id="efetuou_pagamento" required class="w-full border rounded p-2 mt-1 text-sm">
                             <option value="">Selecione...</option>
                             <option value="SIM">SIM</option>
                             <option value="NAO">NÃO</option>
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function calcularValorFinal() {
-        if (select.value !== 'SIM') {
+        if (!select.value) {
             valorTotal.disabled = true;
             valorTotal.classList.add('bg-gray-100');
             return;

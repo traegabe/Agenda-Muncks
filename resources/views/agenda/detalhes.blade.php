@@ -184,18 +184,21 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Efetuou pagamento</label>
-                    <select name="efetuou_pagamento" id="efetuou_pagamento_edit" class="w-full border rounded p-2 mt-1 text-sm">
+                    <select name="efetuou_pagamento" id="efetuou_pagamento_edit" class="w-full border rounded p-2 mt-1 text-sm" {{ $agendamento->status == 'concluido' ? 'disabled' : '' }}>
                         <option value="">Selecione...</option>
                         <option value="SIM" {{ $agendamento->efetuou_pagamento === 'SIM' ? 'selected' : '' }}>SIM</option>
                         <option value="NAO" {{ $agendamento->efetuou_pagamento === 'NAO' ? 'selected' : '' }}>NÃO</option>
                     </select>
+                    @if($agendamento->status == 'concluido')
+                    <input type="hidden" name="efetuou_pagamento" value="{{ $agendamento->efetuou_pagamento }}">
+                    @endif
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Valor total</label>
                     <input type="number" step="0.01" name="valor_total" id="valor_total_edit"
                         value="{{ $agendamento->valor_total ? number_format($agendamento->valor_total, 2, '.', '') : '' }}"
-                        {{ $agendamento->efetuou_pagamento !== 'SIM' ? 'disabled' : '' }}
-                        class="w-full border rounded p-2 mt-1 text-sm {{ $agendamento->efetuou_pagamento !== 'SIM' ? 'bg-gray-100' : '' }}">
+                        {{ $agendamento->status != 'concluido' && $agendamento->efetuou_pagamento !== 'SIM' ? 'disabled' : '' }}
+                        class="w-full border rounded p-2 mt-1 text-sm {{ $agendamento->status != 'concluido' && $agendamento->efetuou_pagamento !== 'SIM' ? 'bg-gray-100' : '' }}">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700">Tipo de Serviço</label>
@@ -262,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function calcularValorFinal() {
-        if (select.value !== 'SIM') return;
+        if (select.value !== 'SIM' && !select.disabled) return;
 
         const desl = Math.max(parseFloat(inputsCalc.deslocamento?.value) || 0, 0);
         const he = Math.max(parseFloat(inputsCalc.horaExtraFuncionario?.value) || 0, 0);

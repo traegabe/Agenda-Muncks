@@ -64,6 +64,8 @@
                         <p><span class="text-gray-400">Data:</span> {{ $a->data_inicio->format('d/m/Y') }}</p>
                         <p><span class="text-gray-400">Horário:</span> {{ $a->data_inicio->format('H:i') }}{{ $a->data_fim ? ' às '.$a->data_fim->format('H:i') : '' }}</p>
                         <p><span class="text-gray-400">Motorista:</span> {{ $a->motorista }}</p>
+                        <p><span class="text-gray-400">Valor:</span> R$ {{ $a->valor_total ? number_format($a->valor_total, 2, ',', '.') : ($a->calcularValorTotalBase() > 0 ? number_format($a->calcularValorTotalBase(), 2, ',', '.') : '0,00') }}</p>
+                        <p><span class="text-gray-400">Lançado por:</span> {{ $a->criador->name ?? 'Sistema' }}</p>
                     </div>
                 </div>
                 @php
@@ -73,7 +75,13 @@
                 @if($dataAgendamento->isToday())
                 <div class="sm:flex-shrink-0">
                     <span class="card-alerta-hoje" style="color: #ff6600; font-weight: bold; white-space: nowrap;">
-                        ⚠️ Atenção! O agendamento do Munck é hoje! ⚠️
+                        🔴 Atenção! O agendamento do Munck é <strong>HOJE!</strong> 🔴
+                    </span>
+                </div>
+                @elseif($dataAgendamento->isTomorrow())
+                <div class="sm:flex-shrink-0">
+                    <span class="card-alerta-hoje" style="color: #ff6600; font-weight: bold; white-space: nowrap;">
+                        ⚠️ Atenção! O agendamento do Munck é para <strong>AMANHÃ</strong> ⚠️
                     </span>
                 </div>
                 @elseif($dataAgendamento->isPast())
@@ -82,7 +90,7 @@
                         $diasAtraso = $dataAgendamento->diffInDays($dataHoje);
                     @endphp
                     <span class="card-alerta-hoje" style="color: #ff0000; font-weight: bold; white-space: nowrap;">
-                        ⚠️ Atenção! O munck está com prazo atrasado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} ⚠️
+                        🔻 Atenção! O munck está com prazo atrasado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} 🔻
                     </span>
                 </div>
                 @endif

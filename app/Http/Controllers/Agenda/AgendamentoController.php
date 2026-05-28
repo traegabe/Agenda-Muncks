@@ -60,7 +60,7 @@ class AgendamentoController extends Controller
             'deslocamento' => 'nullable|numeric|min:0',
             'hora_extra_funcionario' => 'nullable|numeric|min:0',
             'valor_hora_extra' => 'nullable|numeric|min:0',
-            'efetuou_pagamento' => 'nullable|string|in:SIM,NAO',
+            'efetuou_pagamento' => 'required|string|in:SIM,NAO',
         ]);
 
         $data['nf_c'] = $request->boolean('nf_c');
@@ -110,7 +110,7 @@ class AgendamentoController extends Controller
             'deslocamento' => 'nullable|numeric|min:0',
             'hora_extra_funcionario' => 'nullable|numeric|min:0',
             'valor_hora_extra' => 'nullable|numeric|min:0',
-            'efetuou_pagamento' => 'nullable|string|in:SIM,NAO',
+            'efetuou_pagamento' => 'required|string|in:SIM,NAO',
         ]);
 
         $data['nf_c'] = $request->boolean('nf_c');
@@ -176,6 +176,13 @@ class AgendamentoController extends Controller
         $agendamento->save();
 
         return redirect('/agenda/dashboard')->with('success', 'Agendamento cancelado.');
+    }
+
+    public function excluir(Agendamento $agendamento)
+    {
+        $agendamento->delete();
+
+        return redirect('/agenda/dashboard?aba=concluidos')->with('success', 'Registro excluído com sucesso.');
     }
 
     public function marcarPago(Request $request, Agendamento $agendamento)

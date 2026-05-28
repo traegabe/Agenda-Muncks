@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         DB::connection('mysql_agenda')->statement("
-            UPDATE agendamentos 
+            UPDATE poliferro_agenda_agendamentos 
             SET deslocamento = CASE 
                 WHEN deslocamento = 'Sim' THEN '0' 
                 WHEN deslocamento = 'Não' THEN NULL 
@@ -32,7 +32,7 @@ return new class extends Migration
         });
 
         DB::connection('mysql_agenda')->statement("
-            UPDATE agendamentos 
+            UPDATE poliferro_agenda_agendamentos 
             SET deslocamento = CASE 
                 WHEN deslocamento IS NOT NULL AND CAST(deslocamento AS DECIMAL(10,2)) > 0 THEN 'Sim' 
                 ELSE NULL 

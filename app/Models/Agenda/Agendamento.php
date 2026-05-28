@@ -73,7 +73,7 @@ class Agendamento extends Model
 
     public function scopeNaoPagos($query)
     {
-        return $query->where(function ($q) {
+        return $query->where('status', '!=', 'cancelado')->where(function ($q) {
             $q->where('efetuou_pagamento', 'NAO')
               ->orWhere('status', 'nao_pago')
               ->orWhere(function ($q2) {
