@@ -51,7 +51,7 @@
             $inicio = $a->data_inicio;
             $fim = $a->data_fim;
         @endphp
-        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}'" style="cursor: pointer;" class="bg-red-50 rounded-lg shadow p-4 border-l-4 border-red-500 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}?origem=naopagos'" style="cursor: pointer;" class="bg-red-50 rounded-lg shadow p-4 border-l-4 border-red-500 flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-8">
                 <div class="min-w-0">
                     <h3 class="font-bold text-lg">{{ $a->cliente }}</h3>
@@ -74,7 +74,7 @@
                         $diasAtraso = $dataAgendamento->diffInDays($dataHoje);
                     @endphp
                     <span style="color: #ff0000; font-weight: bold; white-space: nowrap;">
-                        ⚠️ Atenção! O pagamento está atrazado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} ⚠️
+                        ⚠️ Atenção! O pagamento está atrasado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} ⚠️
                     </span>
                 </div>
                 @endif

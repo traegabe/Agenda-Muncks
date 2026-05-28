@@ -105,7 +105,7 @@
 
     <div class="border-t pt-6">
         <h2 class="text-lg font-bold mb-4">Editar Agendamento</h2>
-        <form method="POST" action="/agenda/agendamentos/{{ $agendamento->id }}">
+        <form method="POST" action="/agenda/agendamentos/{{ $agendamento->id }}" data-status="{{ $agendamento->status }}">
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -236,68 +236,84 @@ function confirmarCancelamento(url) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const select = document.getElementById('efetuou_pagamento_edit');
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const origem = params.get('origem');
+
+    const status = form.dataset.status;
+    const isConcluido = status === 'concluido';
     const valorTotal = document.getElementById('valor_total_edit');
-    let isUpdating = false;
+    const selectEfetuou = document.getElementById('efetuou_pagamento_edit');
     let manualBase = null;
+    let isUpdating = false;
 
-    const inputsCalc = {
-        valorHora: document.querySelector('input[name="valor_hora"]'),
-        dataInicio: document.querySelector('input[name="data_inicio"]'),
-        dataFim: document.querySelector('input[name="data_fim"]'),
-        deslocamento: document.querySelector('input[name="deslocamento"]'),
-        valorHoraExtra: document.querySelector('input[name="valor_hora_extra"]'),
-        horaExtraFuncionario: document.querySelector('input[name="hora_extra_funcionario"]'),
-    };
-
-    function calcularBaseAutomatica() {
-        const vh = Math.max(parseFloat(inputsCalc.valorHora?.value) || 0, 0);
-        if (inputsCalc.dataInicio?.value && inputsCalc.dataFim?.value) {
-            const inicio = new Date(inputsCalc.dataInicio.value);
-            const fim = new Date(inputsCalc.dataFim.value);
-            if (fim > inicio) {
-                const diffMs = fim - inicio;
-                const horas = Math.max(diffMs / (1000 * 60 * 60), 0);
-                return vh * horas;
-            }
+    function sanitize(val) {
+        if (val === '' || val === null || val === undefined) return 0;
+        let s = String(val).replace(/R\$/gi, '').trim();
+        if (s.includes(',')) {
+            s = s.replace(/\./g, '').replace(',', '.');
         }
-        return 0;
+        const num = parseFloat(s);
+        return isNaN(num) ? 0 : Math.max(num, 0);
     }
 
-    function calcularValorFinal() {
-        if (select.value !== 'SIM' && !select.disabled) return;
+    if (isConcluido) {
+        const initialDesl = sanitize(document.querySelector('input[name="deslocamento"]')?.value);
+        const initialHe = sanitize(document.querySelector('input[name="hora_extra_funcionario"]')?.value);
+        const initialVhe = sanitize(document.querySelector('input[name="valor_hora_extra"]')?.value);
+        const initialValorHora = sanitize(document.querySelector('input[name="valor_hora"]')?.value);
+        const initialTotal = sanitize(valorTotal?.value);
+        manualBase = Math.max(initialTotal - initialValorHora - initialDesl - (initialHe * initialVhe), 0);
 
-        const desl = Math.max(parseFloat(inputsCalc.deslocamento?.value) || 0, 0);
-        const he = Math.max(parseFloat(inputsCalc.horaExtraFuncionario?.value) || 0, 0);
-        const vhe = Math.max(parseFloat(inputsCalc.valorHoraExtra?.value) || 0, 0);
-        const base = manualBase !== null ? manualBase : calcularBaseAutomatica();
-        const total = base + desl + (he * vhe);
+        document.querySelectorAll([
+            'input[name="cliente"]',
+            'select[name="motorista"]',
+            'select[name="veiculo_id"]',
+        ].join(',')).forEach(function (el) {
+            if (el) el.disabled = true;
+        });
 
-        isUpdating = true;
-        valorTotal.value = total > 0 ? total.toFixed(2) : '';
-        isUpdating = false;
-    }
-
-    function toggleValorTotal() {
-        manualBase = null;
-        calcularValorFinal();
-    }
-
-    valorTotal.addEventListener('input', function () {
-        if (isUpdating) return;
-        manualBase = parseFloat(this.value) || 0;
-        calcularValorFinal();
-    });
-
-    select.addEventListener('change', toggleValorTotal);
-    Object.values(inputsCalc).forEach(function (el) {
-        if (el) {
-            el.addEventListener(el.type === 'datetime-local' ? 'change' : 'input', function () {
-                if (manualBase === null) calcularValorFinal();
-                else calcularValorFinal();
+        form.addEventListener('submit', function () {
+            form.querySelectorAll('[disabled]').forEach(function (el) {
+                el.disabled = false;
             });
+        });
+    }
+
+    if (origem === 'agendados' || origem === 'naopagos' || origem === 'concluidos') {
+        function recalcular() {
+            const valorHora = sanitize(document.querySelector('input[name="valor_hora"]')?.value);
+            const desl = sanitize(document.querySelector('input[name="deslocamento"]')?.value);
+            const he = sanitize(document.querySelector('input[name="hora_extra_funcionario"]')?.value);
+            const vhe = sanitize(document.querySelector('input[name="valor_hora_extra"]')?.value);
+
+            const dataInicio = document.querySelector('input[name="data_inicio"]')?.value;
+            const dataFim = document.querySelector('input[name="data_fim"]')?.value;
+            let horasPeriodo = 0;
+            if (dataInicio && dataFim) {
+                const inicio = new Date(dataInicio);
+                const fim = new Date(dataFim);
+                if (fim > inicio) {
+                    horasPeriodo = (fim - inicio) / (1000 * 60 * 60);
+                }
+            }
+
+            const total = (horasPeriodo * valorHora) + desl + (he * vhe);
+            valorTotal.value = total.toFixed(2);
         }
-    });
+
+        ['valor_hora', 'deslocamento', 'hora_extra_funcionario', 'valor_hora_extra'].forEach(function(name) {
+            const el = document.querySelector('input[name="' + name + '"]');
+            if (el) el.addEventListener('input', recalcular);
+        });
+
+        ['data_inicio', 'data_fim'].forEach(function(name) {
+            const el = document.querySelector('input[name="' + name + '"]');
+            if (el) el.addEventListener('change', recalcular);
+        });
+    }
 });
 </script>
 @endpush

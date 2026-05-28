@@ -55,7 +55,7 @@
                 $bgCor = 'bg-red-50';
             }
         @endphp
-        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}'" style="cursor: pointer;" class="{{ $bgCor }} rounded-lg shadow p-4 border-l-4 {{ $cor }} flex flex-col sm:flex-row sm:items-center gap-3">
+        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}?origem=agendados'" style="cursor: pointer;" class="{{ $bgCor }} rounded-lg shadow p-4 border-l-4 {{ $cor }} flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-8">
                 <div class="min-w-0">
                     <h3 class="font-bold text-lg">{{ $a->cliente }}</h3>

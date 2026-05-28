@@ -72,14 +72,7 @@ class AgendamentoController extends Controller
             $request->filled('data_fim') ? $data['data_fim'] : null
         );
         if ($conflito) {
-            $placa = $conflito->veiculo->placa;
-            $modelo = $conflito->veiculo->modelo ?? '';
-            $cliente = $conflito->cliente;
-            $dia = $conflito->data_inicio->format('d/m/Y');
-            $horaInicio = $conflito->data_inicio->format('H:i');
-            $horaFim = $conflito->data_fim ? $conflito->data_fim->format('H:i') : '---';
-            $msg = "ATENÇÃO, O VEÍCULO: {$placa} {$modelo} JÁ ESTÁ AGENDADO PARA A EMPRESA: {$cliente} DIA {$dia} DE {$horaInicio} Á {$horaFim}";
-            return back()->withErrors(['conflito' => $msg])->withInput();
+            return back()->withErrors(['conflito' => $this->getMensagemConflito($conflito)])->withInput();
         }
 
         Agendamento::create($data);
@@ -102,7 +95,6 @@ class AgendamentoController extends Controller
             'data_inicio' => 'required|date',
             'data_fim' => 'nullable|date|after:data_inicio',
             'valor_hora' => 'nullable|numeric|min:0',
-            'valor_total' => 'nullable|numeric|min:0',
             'nf_c' => 'boolean',
             'motorista' => 'required|string|max:200',
             'veiculo_id' => 'required|exists:mysql_agenda.veiculos,id',
@@ -116,6 +108,22 @@ class AgendamentoController extends Controller
         $data['nf_c'] = $request->boolean('nf_c');
         $data['updated_by'] = Auth::id();
 
+        $valorHora = (float)($data['valor_hora'] ?? 0);
+        $deslocamento = (float)($data['deslocamento'] ?? 0);
+        $horaExtra = (float)($data['hora_extra_funcionario'] ?? 0);
+        $valorHoraExtra = (float)($data['valor_hora_extra'] ?? 0);
+
+        $horasPeriodo = 0;
+        if ($request->filled('data_inicio') && $request->filled('data_fim')) {
+            $inicio = Carbon::parse($data['data_inicio']);
+            $fim = Carbon::parse($data['data_fim']);
+            if ($fim->greaterThan($inicio)) {
+                $horasPeriodo = $inicio->diffInHours($fim);
+            }
+        }
+
+        $data['valor_total'] = ($horasPeriodo * $valorHora) + $deslocamento + ($horaExtra * $valorHoraExtra);
+
         $conflito = $this->verificarConflito(
             $data['veiculo_id'],
             $data['data_inicio'],
@@ -123,14 +131,7 @@ class AgendamentoController extends Controller
             $agendamento->id
         );
         if ($conflito) {
-            $placa = $conflito->veiculo->placa;
-            $modelo = $conflito->veiculo->modelo ?? '';
-            $cliente = $conflito->cliente;
-            $dia = $conflito->data_inicio->format('d/m/Y');
-            $horaInicio = $conflito->data_inicio->format('H:i');
-            $horaFim = $conflito->data_fim ? $conflito->data_fim->format('H:i') : '---';
-            $msg = "ATENÇÃO, O VEÍCULO: {$placa} {$modelo} JÁ ESTÁ AGENDADO PARA A EMPRESA: {$cliente} DIA {$dia} DE {$horaInicio} Á {$horaFim}";
-            return back()->withErrors(['conflito' => $msg])->withInput();
+            return back()->withErrors(['conflito' => $this->getMensagemConflito($conflito)])->withInput();
         }
 
         if (!$request->filled('data_fim')) {
@@ -214,17 +215,7 @@ class AgendamentoController extends Controller
             $agendamento->pago = true;
 
             if (is_null($agendamento->valor_total)) {
-                if ($agendamento->valor_hora && $agendamento->data_fim) {
-                    $inicio = Carbon::parse($agendamento->data_inicio);
-                    $fim = Carbon::parse($agendamento->data_fim);
-                    $horas = $inicio->diffInHours($fim);
-                    $horas = $horas > 0 ? $horas : 1;
-                    $base = $agendamento->valor_hora * $horas;
-                } else {
-                    $base = 0;
-                }
-                $adicional = (float)($agendamento->deslocamento ?? 0) + ((float)($agendamento->hora_extra_funcionario ?? 0) * (float)($agendamento->valor_hora_extra ?? 0));
-                $agendamento->valor_total = $base + $adicional;
+                $agendamento->valor_total = $agendamento->calcularValorTotalBase();
             }
         } else {
             $agendamento->status = 'nao_pago';
@@ -269,6 +260,18 @@ class AgendamentoController extends Controller
         ));
 
         return $pdf->download('RELATÓRIO-ALUGUEL.pdf');
+    }
+
+    private function getMensagemConflito(Agendamento $conflito): string
+    {
+        $placa = $conflito->veiculo->placa;
+        $modelo = $conflito->veiculo->modelo ?? '';
+        $cliente = $conflito->cliente;
+        $dia = $conflito->data_inicio->format('d/m/Y');
+        $horaInicio = $conflito->data_inicio->format('H:i');
+        $horaFim = $conflito->data_fim ? $conflito->data_fim->format('H:i') : '---';
+
+        return "ATENÇÃO, O VEÍCULO: {$placa} {$modelo} JÁ ESTÁ AGENDADO PARA A EMPRESA: {$cliente} DIA {$dia} DE {$horaInicio} Á {$horaFim}";
     }
 
     private function verificarConflito($veiculoId, $dataInicio, $dataFim, $excluirId = null)

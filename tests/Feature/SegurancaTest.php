@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class SegurancaTest extends TestCase
@@ -13,13 +12,7 @@ class SegurancaTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('users')) {
-            $this->artisan('migrate', [
-                '--path' => 'database/migrations/0001_01_01_000000_create_users_table.php',
-                '--realpath' => true,
-                '--force' => true,
-            ]);
-        }
+        $this->artisan('migrate', ['--force' => true]);
     }
 
     public function test_rota_dashboard_sem_auth_redireciona_para_login(): void

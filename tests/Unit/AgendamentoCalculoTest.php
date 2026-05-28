@@ -102,39 +102,26 @@ class AgendamentoCalculoTest extends TestCase
         $this->assertSame(230.0, $a->calcularValorTotalBase());
     }
 
-    public function test_marcar_pago_formula_correta(): void
+    public function test_calcula_base_com_valor_hora_nulo(): void
     {
-        $valorRecebido = 800.0;
-        $deslocamento = 50.0;
-        $horaExtra = 3.0;
-        $valorHoraExtra = 40.0;
+        $a = new Agendamento;
+        $a->setAttribute('deslocamento', 100);
+        $a->setAttribute('hora_extra_funcionario', 2);
+        $a->setAttribute('valor_hora_extra', 50);
 
-        $total = $valorRecebido + $deslocamento + ($horaExtra * $valorHoraExtra);
-
-        $this->assertSame(970.0, $total);
+        $this->assertSame(200.0, $a->calcularValorTotalBase());
     }
 
-    public function test_marcar_pago_sem_horas_extras(): void
+    public function test_calcula_base_retorna_float(): void
     {
-        $valorRecebido = 1000.0;
-        $deslocamento = 0.0;
-        $horaExtra = 0.0;
-        $valorHoraExtra = 0.0;
+        $a = new Agendamento;
+        $a->setAttribute('valor_hora', 75.5);
+        $a->setAttribute('data_inicio', Carbon::parse('2026-01-01 08:00:00'));
+        $a->setAttribute('data_fim', Carbon::parse('2026-01-01 17:00:00'));
 
-        $total = $valorRecebido + $deslocamento + ($horaExtra * $valorHoraExtra);
+        $resultado = $a->calcularValorTotalBase();
 
-        $this->assertSame(1000.0, $total);
-    }
-
-    public function test_marcar_pago_com_deslocamento_zero(): void
-    {
-        $valorRecebido = 500.0;
-        $deslocamento = 0.0;
-        $horaExtra = 2.0;
-        $valorHoraExtra = 30.0;
-
-        $total = $valorRecebido + $deslocamento + ($horaExtra * $valorHoraExtra);
-
-        $this->assertSame(560.0, $total);
+        $this->assertIsFloat($resultado);
+        $this->assertSame(679.5, $resultado);
     }
 }

@@ -37,7 +37,7 @@
                 Aplicar Filtro
             </button>
             @if(request('filtro_inicio') || request('filtro_fim') || request('veiculo_id'))
-            <a href="/agenda/dashboard"
+            <a href="/agenda/dashboard?aba=concluidos"
                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1.5 rounded text-sm">
                 Limpar
             </a>
@@ -55,7 +55,7 @@
                 $cor = 'border-red-500';
             }
         @endphp
-        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}'" style="cursor: pointer;" class="block">
+        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}?origem=concluidos'" style="cursor: pointer;" class="block">
             <div class="bg-green-50 rounded-lg shadow p-4 border-l-4 {{ $cor }} flex items-center gap-3">
                 <div class="flex-1 min-w-0">
                     <h3 class="font-bold text-lg">{{ $a->cliente }}</h3>
