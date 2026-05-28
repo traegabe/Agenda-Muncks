@@ -210,11 +210,16 @@ class AgendamentoController extends Controller
         $agendamento->updated_by = Auth::id();
         $agendamento->motivo_pendencia = null;
 
-        if ($agendamento->efetuou_pagamento === 'SIM') {
+        $efetuouPagamento = $request->input('efetuou_pagamento', $agendamento->efetuou_pagamento);
+
+        if ($efetuouPagamento === 'SIM') {
+            $agendamento->efetuou_pagamento = 'SIM';
             $agendamento->status = 'concluido';
             $agendamento->pago = true;
 
-            if (is_null($agendamento->valor_total)) {
+            if ($request->filled('valor_total')) {
+                $agendamento->valor_total = $request->valor_total;
+            } elseif (is_null($agendamento->valor_total)) {
                 $agendamento->valor_total = $agendamento->calcularValorTotalBase();
             }
         } else {

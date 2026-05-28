@@ -79,31 +79,19 @@
                 </div>
                 @endif
             </div>
-            <div onclick="event.stopPropagation();" class="sm:min-w-[180px]" x-data="{ step: 'button' }">
-                <template x-if="step === 'button'">
-                    <button @click="step = 'form'"
-                        class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-semibold touch-target">
+            <div onclick="event.stopPropagation();" class="card-botao-acoes flex sm:flex-col gap-2 sm:min-w-[140px]">
+                <form method="POST" action="/agenda/agendamentos/{{ $a->id }}/fluxo-pagamento"
+                    data-efetuou-pagamento="{{ $a->efetuou_pagamento }}"
+                    data-data-inicio="{{ $a->data_inicio->format('Y-m-d') }}"
+                    data-deslocamento="{{ $a->deslocamento ?? 0 }}"
+                    data-horas-extras-qtd="{{ $a->hora_extra_funcionario ?? 0 }}"
+                    data-horas-extras-valor="{{ $a->valor_hora_extra ?? 0 }}">
+                    @csrf
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-sm font-semibold whitespace-nowrap touch-target">
                         💰 Registrar Pagamento
                     </button>
-                </template>
-                <template x-if="step === 'form'">
-                    <form method="POST" action="/agenda/agendamentos/{{ $a->id }}/pagar" class="flex flex-col gap-2">
-                        @csrf
-                        <input type="number" name="valor_recebido" step="0.01" min="0" required
-                            placeholder="Valor recebido"
-                            class="w-full border rounded p-2 text-sm">
-                        <div class="flex gap-2">
-                            <button type="submit"
-                                class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-sm font-semibold touch-target">
-                                Confirmar
-                            </button>
-                            <button type="button" @click="step = 'button'"
-                                class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-3 rounded text-sm touch-target">
-                                Cancelar
-                            </button>
-                        </div>
-                    </form>
-                </template>
+                </form>
             </div>
         </div>
         @empty
@@ -118,6 +106,14 @@ function toggleFiltroNaoPagos() {
     const el = document.getElementById('filtro-naopagos');
     el.classList.toggle('hidden');
 }
+
+document.querySelectorAll('#aba-naopagos form[action*="fluxo-pagamento"]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+        if (form.dataset.efetuouPagamento !== 'NAO') return;
+        e.preventDefault();
+        window.abrirModalPagamento(form);
+    });
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);

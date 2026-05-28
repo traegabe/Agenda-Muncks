@@ -96,7 +96,12 @@
                 @endif
             </div>
             <div onclick="event.stopPropagation();" class="card-botao-acoes flex sm:flex-col gap-2 sm:min-w-[140px]">
-                <form method="POST" action="/agenda/agendamentos/{{ $a->id }}/fluxo-pagamento">
+                <form method="POST" action="/agenda/agendamentos/{{ $a->id }}/fluxo-pagamento"
+                    data-efetuou-pagamento="{{ $a->efetuou_pagamento }}"
+                    data-data-inicio="{{ $a->data_inicio->format('Y-m-d') }}"
+                    data-deslocamento="{{ $a->deslocamento ?? 0 }}"
+                    data-horas-extras-qtd="{{ $a->hora_extra_funcionario ?? 0 }}"
+                    data-horas-extras-valor="{{ $a->valor_hora_extra ?? 0 }}">
                     @csrf
                     <button type="submit"
                         class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-sm font-semibold whitespace-nowrap touch-target">
@@ -135,6 +140,19 @@ function toggleFiltroAgendados() {
     const el = document.getElementById('filtro-agendados');
     el.classList.toggle('hidden');
 }
+
+document.querySelectorAll('#aba-agendados form[action*="fluxo-pagamento"]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+        if (form.dataset.efetuouPagamento !== 'NAO') return;
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const dataAgendamento = new Date(form.dataset.dataInicio + 'T00:00:00');
+        if (dataAgendamento >= hoje) {
+            e.preventDefault();
+            window.abrirModalPagamento(form);
+        }
+    });
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);

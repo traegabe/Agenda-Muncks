@@ -73,12 +73,14 @@ class Agendamento extends Model
 
     public function scopeNaoPagos($query)
     {
-        return $query->where('status', '!=', 'cancelado')->where(function ($q) {
-            $q->where('efetuou_pagamento', 'NAO')
-              ->orWhere('status', 'nao_pago')
-              ->orWhere(function ($q2) {
-                  $q2->where('status', 'concluido')->where('pago', false);
-              });
-        })->orderByDesc('data_inicio');
+        return $query->where('status', '!=', 'cancelado')
+            ->where('data_inicio', '<', now()->startOfDay())
+            ->where(function ($q) {
+                $q->where('efetuou_pagamento', 'NAO')
+                  ->orWhere('status', 'nao_pago')
+                  ->orWhere(function ($q2) {
+                      $q2->where('status', 'concluido')->where('pago', false);
+                  });
+            })->orderByDesc('data_inicio');
     }
 }
