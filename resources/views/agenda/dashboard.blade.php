@@ -121,6 +121,54 @@
 .modal-close-x-btn:hover {
     color: #374151;
 }
+
+/* ==========================================================================
+   MANDATÓRIO: ALTERAÇÕES APENAS PARA WEB MOBILE (TELAS ATÉ 767px)
+   O código do Web PC deve permanecer 100% congelado e intocado.
+   ========================================================================== */
+@media (max-width: 767px) {
+    /* Ajusta a largura e padding do container principal do modal no celular */
+    #modal-pagamento-pendente > div > div {
+        max-width: 92% !important;
+        margin: 1.5rem auto !important;
+        padding: 12px !important;
+    }
+
+    /* Reduz o tamanho do título para evitar quebra */
+    #modal-titulo-pagamento {
+        font-size: 1.3rem !important;
+        line-height: 1.4 !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Reduz espaçamento entre linhas de informação */
+    #modal-pagamento-pendente .space-y-1 > .flex {
+        margin-bottom: 8px !important;
+    }
+
+    /* Ajusta tamanho dos textos para melhor legibilidade mobile */
+    #modal-pagamento-pendente label,
+    #modal-pagamento-pendente span:not(.text-xs),
+    #modal-pagamento-pendente strong {
+        font-size: 0.9rem !important;
+    }
+
+    /* Botões lado a lado e preenchendo a largura disponível */
+    #modal-pagamento-pendente .mt-6 {
+        padding-top: 10px !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        gap: 5px !important;
+    }
+
+    /* Botões com tamanho fluido */
+    #modal-pagamento-pendente .mt-6 .touch-target {
+        padding: 8px 12px !important;
+        font-size: 0.85rem !important;
+        flex: 1 !important;
+        white-space: nowrap !important;
+    }
+}
 </style>
 
 @push('scripts')
