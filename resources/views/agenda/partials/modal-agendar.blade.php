@@ -13,7 +13,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Cliente</label>
                         <input type="text" name="cliente" required
-                            class="w-full border rounded p-2 mt-1 text-sm">
+                            class="w-full border rounded p-2 mt-1 text-sm"
+                            style="text-transform: uppercase;"
+                            oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Contato</label>

@@ -63,7 +63,13 @@ class Agendamento extends Model
 
     public function scopeAgendados($query)
     {
-        return $query->where('status', 'agendado')->orderBy('data_inicio');
+        return $query->where(function ($q) {
+            $q->where('status', 'agendado')
+              ->orWhere(function ($q2) {
+                  $q2->where('data_fim', '<', now())
+                      ->whereNotIn('status', ['concluido', 'cancelado']);
+              });
+        })->orderBy('data_inicio');
     }
 
     public function scopeConcluidos($query)
@@ -74,12 +80,18 @@ class Agendamento extends Model
     public function scopeNaoPagos($query)
     {
         return $query->where('status', '!=', 'cancelado')
-            ->where('data_inicio', '<', now()->startOfDay())
+            ->where('efetuou_pagamento', 'NAO')
             ->where(function ($q) {
-                $q->where('efetuou_pagamento', 'NAO')
-                  ->orWhere('status', 'nao_pago')
+                $q->where('data_fim', '<', now()->startOfDay())
                   ->orWhere(function ($q2) {
-                      $q2->where('status', 'concluido')->where('pago', false);
+                      $q2->whereNull('data_fim')
+                         ->where('data_inicio', '<', now()->startOfDay());
+                  });
+            })
+            ->where(function ($q) {
+                $q->where('status', 'nao_pago')
+                  ->orWhere(function ($q2) {
+                      $q2->whereNotIn('status', ['concluido', 'cancelado']);
                   });
             })->orderByDesc('data_inicio');
     }

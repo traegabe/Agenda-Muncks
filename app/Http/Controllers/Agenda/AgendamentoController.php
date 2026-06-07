@@ -63,6 +63,7 @@ class AgendamentoController extends Controller
             'efetuou_pagamento' => 'required|string|in:SIM,NAO',
         ]);
 
+        $data['cliente'] = mb_strtoupper($data['cliente'], 'UTF-8');
         $data['nf_c'] = $request->boolean('nf_c');
         $data['created_by'] = Auth::id();
 
@@ -222,6 +223,25 @@ class AgendamentoController extends Controller
             } elseif (is_null($agendamento->valor_total)) {
                 $agendamento->valor_total = $agendamento->calcularValorTotalBase();
             }
+
+            if ($request->filled('data_inicio')) {
+                $agendamento->data_inicio = $request->data_inicio;
+            }
+            if ($request->filled('data_fim')) {
+                $agendamento->data_fim = $request->data_fim;
+            }
+            if ($request->filled('valor_hora')) {
+                $agendamento->valor_hora = $request->valor_hora;
+            }
+            if ($request->filled('deslocamento')) {
+                $agendamento->deslocamento = $request->deslocamento;
+            }
+            if ($request->filled('hora_extra_funcionario')) {
+                $agendamento->hora_extra_funcionario = $request->hora_extra_funcionario;
+            }
+            if ($request->filled('valor_hora_extra')) {
+                $agendamento->valor_hora_extra = $request->valor_hora_extra;
+            }
         } else {
             $agendamento->status = 'nao_pago';
             $agendamento->pago = false;
@@ -232,6 +252,53 @@ class AgendamentoController extends Controller
         $tab = $agendamento->efetuou_pagamento === 'SIM' ? 'concluidos' : 'naopagos';
 
         return redirect('/agenda/dashboard?aba=' . $tab)->with('success', 'Serviço concluído com sucesso!');
+    }
+
+    public function atualizarValores(Request $request, Agendamento $agendamento)
+    {
+        $data = $request->validate([
+            'data_inicio' => 'required|date',
+            'data_fim' => 'nullable|date|after_or_equal:data_inicio',
+            'valor_hora' => 'nullable|numeric|min:0',
+            'deslocamento' => 'nullable|numeric|min:0',
+            'hora_extra_funcionario' => 'nullable|numeric|min:0',
+            'valor_hora_extra' => 'nullable|numeric|min:0',
+        ]);
+
+        $registro = Agendamento::where('id', $agendamento->id)->firstOrFail();
+
+        $registro->data_inicio = $data['data_inicio'];
+        $registro->data_fim = $request->filled('data_fim') ? $data['data_fim'] : null;
+        $registro->valor_hora = $data['valor_hora'] ?? $registro->valor_hora;
+        $registro->deslocamento = $data['deslocamento'] ?? $registro->deslocamento;
+        $registro->hora_extra_funcionario = $data['hora_extra_funcionario'] ?? $registro->hora_extra_funcionario;
+        $registro->valor_hora_extra = $data['valor_hora_extra'] ?? $registro->valor_hora_extra;
+
+        $registro->valor_total = $registro->calcularValorTotalBase();
+        $registro->updated_by = Auth::id();
+
+        $registro->save();
+
+        $registro->load('veiculo', 'criador');
+
+        return response()->json([
+            'sucesso' => true,
+            'registroAtualizado' => [
+                'id' => $registro->id,
+                'data_inicio' => $registro->data_inicio->format('d/m/Y H:i'),
+                'data_fim' => $registro->data_fim ? $registro->data_fim->format('d/m/Y H:i') : '',
+                'data_inicio_raw' => $registro->data_inicio->format('d/m/Y'),
+                'horario_inicio' => $registro->data_inicio->format('H:i'),
+                'horario_fim' => $registro->data_fim ? $registro->data_fim->format('H:i') : '',
+                'valor_hora' => $registro->valor_hora,
+                'deslocamento' => $registro->deslocamento,
+                'hora_extra_funcionario' => $registro->hora_extra_funcionario,
+                'valor_hora_extra' => $registro->valor_hora_extra,
+                'valor_total' => number_format($registro->valor_total, 2, ',', '.'),
+                'valor_total_raw' => $registro->valor_total,
+                'status' => $registro->status,
+            ]
+        ]);
     }
 
     public function gerarPdf(Request $request)
@@ -281,36 +348,31 @@ class AgendamentoController extends Controller
 
     private function verificarConflito($veiculoId, $dataInicio, $dataFim, $excluirId = null)
     {
+        $novoInicio = Carbon::parse($dataInicio);
+        $novoFim = $dataFim ? Carbon::parse($dataFim) : null;
+
         $query = Agendamento::with('veiculo')
             ->where('veiculo_id', $veiculoId)
-            ->whereIn('status', ['agendado', 'pendente']);
-
-        if ($dataFim) {
-            $dataInicioDate = Carbon::parse($dataInicio)->toDateString();
-            $query->where(function ($q) use ($dataInicio, $dataFim, $dataInicioDate) {
-                $q->whereBetween('data_inicio', [$dataInicio, $dataFim])
-                  ->orWhereBetween('data_fim', [$dataInicio, $dataFim])
-                  ->orWhere(function ($q2) use ($dataInicio, $dataFim) {
-                      $q2->where('data_inicio', '<=', $dataInicio)
-                         ->where('data_fim', '>=', $dataFim);
-                  })
-                  ->orWhere(function ($q3) use ($dataInicio, $dataInicioDate) {
-                      $q3->whereNull('data_fim')
-                         ->where('data_inicio', '<=', $dataInicio)
-                         ->whereDate('data_inicio', $dataInicioDate);
-                  });
+            ->whereIn('status', ['agendado', 'pendente'])
+            ->where(function ($q) use ($novoInicio, $novoFim) {
+                $q->where(function ($q2) use ($novoInicio, $novoFim) {
+                    $q2->whereNotNull('data_fim');
+                    if ($novoFim) {
+                        $q2->where('data_inicio', '<', $novoFim)
+                           ->where('data_fim', '>', $novoInicio);
+                    } else {
+                        $q2->where('data_inicio', '<=', $novoInicio)
+                           ->where('data_fim', '>', $novoInicio);
+                    }
+                })->orWhere(function ($q2) use ($novoInicio, $novoFim) {
+                    $q2->whereNull('data_fim');
+                    if ($novoFim) {
+                        $q2->where('data_inicio', '<', $novoFim);
+                    } else {
+                        $q2->whereDate('data_inicio', $novoInicio->toDateString());
+                    }
+                });
             });
-        } else {
-            $dataInicioCarbon = Carbon::parse($dataInicio);
-            $query->where(function ($q) use ($dataInicioCarbon) {
-                $q->whereDate('data_inicio', $dataInicioCarbon->toDateString())
-                  ->orWhere(function ($q2) use ($dataInicioCarbon) {
-                      $q2->where('data_inicio', '<=', $dataInicioCarbon)
-                         ->whereNotNull('data_fim')
-                         ->where('data_fim', '>=', $dataInicioCarbon);
-                  });
-            });
-        }
 
         if ($excluirId) {
             $query->where('id', '!=', $excluirId);

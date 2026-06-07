@@ -47,53 +47,14 @@
 
     <div class="space-y-3">
         @forelse($naoPagos as $a)
-        @php
-            $inicio = $a->data_inicio;
-            $fim = $a->data_fim;
-        @endphp
-        <div onclick="window.location.href='/agenda/agendamentos/{{ $a->id }}?origem=naopagos'" style="cursor: pointer;" class="bg-red-50 rounded-lg shadow p-4 border-l-4 border-red-500 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-8">
-                <div class="min-w-0">
-                    <h3 class="font-bold text-lg">{{ $a->cliente }}</h3>
-                    <div class="text-sm text-gray-600 mt-1 space-y-0.5">
-                        <p><span class="text-gray-400">Contato:</span> {{ $a->contato }}</p>
-                        <p><span class="text-gray-400">Data:</span> {{ $inicio->format('d/m/Y') }}</p>
-                        <p><span class="text-gray-400">Horário:</span> {{ $inicio->format('H:i') }}{{ $fim ? ' às '.$fim->format('H:i') : '' }}</p>
-                        <p><span class="text-gray-400">Motorista:</span> {{ $a->motorista }}</p>
-                        <p><span class="text-gray-400">Valor:</span> R$ {{ $a->valor_total ? number_format($a->valor_total, 2, ',', '.') : '0,00' }}</p>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2">Lançado por: {{ $a->criador->name ?? 'Sistema' }}</p>
-                </div>
-                @php
-                    $dataAgendamento = $a->data_inicio->copy()->startOfDay();
-                    $dataHoje = \Carbon\Carbon::now()->startOfDay();
-                @endphp
-                @if($dataAgendamento->isPast())
-                <div class="sm:flex-shrink-0">
-                    @php
-                        $diasAtraso = $dataAgendamento->diffInDays($dataHoje);
-                    @endphp
-                    <span style="color: #ff0000; font-weight: bold; white-space: nowrap;">
-                        ⚠️ Atenção! O pagamento está atrasado {{ $diasAtraso }} {{ $diasAtraso == 1 ? 'dia' : 'dias' }} ⚠️
-                    </span>
-                </div>
-                @endif
-            </div>
-            <div onclick="event.stopPropagation();" class="card-botao-acoes flex sm:flex-col gap-2 sm:min-w-[140px]">
-                <form method="POST" action="/agenda/agendamentos/{{ $a->id }}/fluxo-pagamento"
-                    data-efetuou-pagamento="{{ $a->efetuou_pagamento }}"
-                    data-data-inicio="{{ $a->data_inicio->format('Y-m-d') }}"
-                    data-deslocamento="{{ $a->deslocamento ?? 0 }}"
-                    data-horas-extras-qtd="{{ $a->hora_extra_funcionario ?? 0 }}"
-                    data-horas-extras-valor="{{ $a->valor_hora_extra ?? 0 }}">
-                    @csrf
-                    <button type="submit"
-                        class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-sm font-semibold whitespace-nowrap touch-target">
-                        💰 Registrar Pagamento
-                    </button>
-                </form>
-            </div>
-        </div>
+        @include('agenda.partials.card-agendamento', [
+            'agendamento' => $a,
+            'origem' => 'naopagos',
+            'alertType' => 'pagamento',
+            'botaoTexto' => '💰 Registrar Pagamento',
+            'bgCor' => 'bg-red-50',
+            'cor' => 'border-red-500',
+        ])
         @empty
         <p class="text-gray-500 text-center py-8">Nenhum serviço com pagamento pendente.</p>
         @endforelse
@@ -109,7 +70,6 @@ function toggleFiltroNaoPagos() {
 
 document.querySelectorAll('#aba-naopagos form[action*="fluxo-pagamento"]').forEach(function (form) {
     form.addEventListener('submit', function (e) {
-        if (form.dataset.efetuouPagamento !== 'NAO') return;
         e.preventDefault();
         window.abrirModalPagamento(form);
     });

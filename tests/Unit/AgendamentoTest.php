@@ -67,7 +67,7 @@ class AgendamentoTest extends TestCase
         $sql = $query->toSql();
         $bindings = $query->getBindings();
 
-        $this->assertStringContainsString('where "status" = ?', $sql);
+        $this->assertStringContainsString('"status" = ?', $sql);
         $this->assertStringContainsString('order by "data_inicio" asc', $sql);
         $this->assertContains('agendado', $bindings);
     }

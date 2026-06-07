@@ -22,6 +22,7 @@ Route::prefix('agenda')->group(function () {
         Route::post('/agendamentos/{agendamento}/status', [AgendamentoController::class, 'updateStatus'])->name('agendamentos.status');
         Route::post('/agendamentos/{agendamento}/pagar', [AgendamentoController::class, 'marcarPago'])->name('agendamentos.pagar');
         Route::post('/agendamentos/{agendamento}/fluxo-pagamento', [AgendamentoController::class, 'fluxoPagamento'])->name('agendamentos.fluxo-pagamento');
+        Route::post('/agendamentos/{agendamento}/atualizar-valores', [AgendamentoController::class, 'atualizarValores'])->name('agendamentos.atualizar-valores');
         Route::delete('/agendamentos/{agendamento}/excluir', [AgendamentoController::class, 'excluir'])->name('agendamentos.excluir');
         Route::get('/relatorio-pdf', [AgendamentoController::class, 'gerarPdf'])->name('agenda.relatorio-pdf');
     });

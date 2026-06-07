@@ -7,11 +7,18 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-blue-900">{{ $agendamento->cliente }}</h1>
         <span class="px-3 py-1 rounded text-sm font-semibold
-            @if($agendamento->status === 'agendado') bg-blue-100 text-blue-800
+            @if(request('origem') === 'naopagos') bg-red-600 text-white
+            @elseif(request('origem') === 'agendados' || $agendamento->status === 'agendado') bg-blue-100 text-blue-800
             @elseif($agendamento->status === 'pendente') bg-yellow-100 text-yellow-800
             @elseif($agendamento->status === 'concluido') bg-green-100 text-green-800
             @else bg-red-100 text-red-800 @endif">
-            {{ ucfirst($agendamento->status) }}
+            @if(request('origem') === 'naopagos')
+                Não pago
+            @elseif(request('origem') === 'agendados')
+                Agendado
+            @else
+                {{ ucfirst($agendamento->status) }}
+            @endif
         </span>
     </div>
 
