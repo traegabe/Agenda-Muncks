@@ -123,50 +123,124 @@
 }
 
 /* ==========================================================================
-   MANDATÓRIO: ALTERAÇÕES APENAS PARA WEB MOBILE (TELAS ATÉ 767px)
-   O código do Web PC deve permanecer 100% congelado e intocado.
+   MANDATORIO: AJUSTES EXCLUSIVOS PARA WEB MOBILE (ANDROID E iOS)
+   O codigo do Web PC permanece 100% congelado e intocado.
    ========================================================================== */
 @media (max-width: 767px) {
-    /* Ajusta a largura e padding do container principal do modal no celular */
+    /* ======================================================================
+       CORRECAO A: FRASE DE AVISO VAZANDO DO CARD (AGENDADOS E NAO PAGOS)
+       O span tem white-space: nowrap inline, forcando overflow lateral
+       ====================================================================== */
+    .card-alerta-centralizado span {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        display: block !important;
+        max-width: 100% !important;
+        font-size: 0.85rem !important;
+        padding-right: 10px !important;
+    }
+
+    /* ======================================================================
+       CORRECAO B: CENTRALIZACAO E ROLAGEM INTERNA DO MODAL
+       Modal fica centralizado na tela e com scroll interno via flex column
+       ====================================================================== */
+    /* Wrapper em flex, centraliza verticalmente o content box */
+    #modal-pagamento-pendente > div {
+        display: flex !important;
+        align-items: center !important;
+        min-height: calc(100% - 2rem) !important;
+        margin: 1rem auto !important;
+    }
+
+    /* Content box com altura limitada e scroll interno */
     #modal-pagamento-pendente > div > div {
-        max-width: 92% !important;
-        margin: 1.5rem auto !important;
-        padding: 12px !important;
+        max-height: 88vh !important;
+        overflow-y: auto !important;
+        padding: 15px !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 
-    /* Reduz o tamanho do título para evitar quebra */
+    /* Titulo */
     #modal-titulo-pagamento {
-        font-size: 1.3rem !important;
-        line-height: 1.4 !important;
-        margin-bottom: 1rem !important;
+        font-size: 0.85rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 0.4rem !important;
     }
 
-    /* Reduz espaçamento entre linhas de informação */
+    /* Cliente */
+    #modal-pagamento-pendente .mb-3 {
+        margin-bottom: 0.35rem !important;
+    }
+
+    #modal-cliente-nome {
+        font-size: 0.85rem !important;
+    }
+
+    #modal-pagamento-pendente .text-xs {
+        font-size: 0.7rem !important;
+    }
+
+    /* Input valor */
+    #input-valor-pago {
+        padding: 0.35rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Linhas info */
     #modal-pagamento-pendente .space-y-1 > .flex {
-        margin-bottom: 8px !important;
+        margin-bottom: 2px !important;
     }
 
-    /* Ajusta tamanho dos textos para melhor legibilidade mobile */
-    #modal-pagamento-pendente label,
-    #modal-pagamento-pendente span:not(.text-xs),
-    #modal-pagamento-pendente strong {
+    #modal-pagamento-pendente .space-y-1 > .flex span {
+        font-size: 0.78rem !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+    }
+
+    #modal-pagamento-pendente .space-y-1 > .flex input {
+        font-size: 0.78rem !important;
+        min-width: 80px !important;
+        flex-shrink: 0 !important;
+        width: auto !important;
+    }
+
+    #modal-pagamento-pendente hr {
+        margin: 3px 0 !important;
+    }
+
+    #modal-pagamento-pendente .text-base.font-bold {
+        font-size: 0.8rem !important;
+    }
+
+    #display-total {
         font-size: 0.9rem !important;
     }
 
-    /* Botões lado a lado e preenchendo a largura disponível */
+    /* Footer dos botoes com separador visual */
     #modal-pagamento-pendente .mt-6 {
-        padding-top: 10px !important;
+        padding-top: 12px !important;
+        margin-top: 6px !important;
+        border-top: 1px solid #dee2e6 !important;
         flex-direction: row !important;
-        justify-content: space-between !important;
-        gap: 5px !important;
+        gap: 6px !important;
+        justify-content: center !important;
     }
 
-    /* Botões com tamanho fluido */
-    #modal-pagamento-pendente .mt-6 .touch-target {
-        padding: 8px 12px !important;
-        font-size: 0.85rem !important;
-        flex: 1 !important;
+    #modal-pagamento-pendente .mt-6 button {
+        width: auto !important;
+        padding: 8px 8px !important;
+        font-size: 0.75rem !important;
+        flex: none !important;
         white-space: nowrap !important;
+    }
+
+    /* Close button */
+    .modal-close-x-btn {
+        top: 10px !important;
+        right: 12px !important;
+        font-size: 20px !important;
     }
 }
 </style>
